@@ -1,0 +1,496 @@
+{
+  "version": "1.0",
+  "conceptualSchemaSettings": {},
+  "queries": [
+    {
+      "name": "gcp_datasource",
+      "lineageTag": "a2483381-c56f-4247-9b06-bbbc33c0f95a",
+      "navigationStepName": "Navigation",
+      "text": [
+        "\"pttep-th-s1-padl\" meta [IsParameterQuery=true, Type=\"Any\", IsParameterQueryRequired=true]"
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Text",
+      "isHidden": false
+    },
+    {
+      "name": "s1_wellsite_data",
+      "lineageTag": "7f0dd653-7c57-4bd9-a2b3-a863d752137b",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"s1_wellsite_data\",Kind=\"View\"]}[Data],",
+        "    #\"Trimmed Text\" = Table.TransformColumns(data,{{\"wellsite_name\", Text.Trim, type text}}),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Trimmed Text\",{{\"wellsite_name\", Order.Ascending}}),",
+        "    #\"Appended Query\" = Table.Combine({#\"Sorted Rows\", S1_area_w_land_type, S1_Reserved_Area_w_land_type}),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Appended Query\",{\"icon\", \"block\"}),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Removed Columns\",null,\"ไม่มีการระบุข้อมูล\",Replacer.ReplaceValue,{\"land_color_code\", \"area_1\" }),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Replaced Value\", \"Order\", each if [platform_type] = \"Platform\"",
+        "then \"02-\" & [wellsite_name]",
+        "else if [platform_type] = \"Reserved area\"",
+        "     then \"01-\" & [wellsite_name]",
+        "     else \"00-\" & [wellsite_name], type text)",
+        "in",
+        "    #\"Added Custom\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),\\n    dataset = Source{[Name=gcp_datasource]}[Data],\\n    schema = dataset{[Name=\\\"sandbox_s1_integrated_database_platform\\\",Kind=\\\"Schema\\\"]}[Data],\\n    data = schema{[Name=\\\"s1_wellsite_data\\\",Kind=\\\"View\\\"]}[Data],\\n    #\\\"Trimmed Text\\\" = Table.TransformColumns(data,{{\\\"wellsite_name\\\", Text.Trim, type text}}),\\n    #\\\"Sorted Rows\\\" = Table.Sort(#\\\"Trimmed Text\\\",{{\\\"wellsite_name\\\", Order.Ascending}}),\\n    #\\\"Appended Query\\\" = Table.Combine({#\\\"Sorted Rows\\\", S1_area_w_land_type, S1_Reserved_Area_w_land_type}),\\n    #\\\"Removed Columns\\\" = Table.RemoveColumns(#\\\"Appended Query\\\",{\\\"icon\\\", \\\"block\\\"}),\\n    #\\\"Replaced Value\\\" = Table.ReplaceValue(#\\\"Removed Columns\\\",null,\\\"ไม่มีการระบุข้อมูล\\\",Replacer.ReplaceValue,{\\\"land_color_code\\\", \\\"area_1\\\" }),\\n    #\\\"Added Custom\\\" = Table.AddColumn(#\\\"Replaced Value\\\", \\\"Order\\\", each if [platform_type] = \\\"Platform\\\"\\nthen \\\"02-\\\" & [wellsite_name]\\nelse if [platform_type] = \\\"Reserved area\\\"\\n     then \\\"01-\\\" & [wellsite_name]\\n     else \\\"00-\\\" & [wellsite_name], type text)\\nin\\n    #\\\"Added Custom\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "wellsite_site_boundary",
+      "lineageTag": "f637aca0-d897-4003-8acc-dfdef4a2e125",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"wellsite_site_boundary\",Kind=\"View\"]}[Data],",
+        "    #\"Filtered Rows\" = Table.SelectRows(data, each ([block] = \"S1\")),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Filtered Rows\",\" + Acc Rd\",\"\",Replacer.ReplaceText,{\"wellsite_name\"}),",
+        "    #\"Replaced Value1\" = Table.ReplaceValue(#\"Replaced Value\",\".\",\"\",Replacer.ReplaceText,{\"wellsite_name\"}),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Replaced Value1\", \"icon\", each \"",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAABJ0AAASdAHeZh94AAAAB3RJTUUH5wgXCDk5ZbnxdwAAANVJREFUGJV1kLFOwnAYxH/3958+BA7Y4og7A4Nx8nFMGEhoB4lNF9LH8DVEtz4EXekoD9BwDsSGiPzGuy/fXU62ASiKYo69xJ4BIDVIdVmWnwCyTZ7nL7I3kiJn2O6BdVlV5U3f93PZ7yGEeD+Z8DCdcjcekyQJ34dDAJ4+ttuviL2UFCdZRpZlw7c0TbHNrm3BXoTfTrejEX8ZNHsWLtwrBKQGYN91F+agSU1Eqn08Pu/aNtoe4vZdd+p3Oqxlm2K1KiS9/Rdpe11W1avOBn/EXlwb/AfJrGeecW9BVwAAAABJRU5ErkJggg==",
+        "\", type text),",
+        "  //  #\"Added Custom\" = Table.AddColumn(data, \"icon\", each \"data:image/jpeg;base64, iVBORw0KGgoAAAANSUhEUgAAAIcAAACHCAYAAAA850oKAAAACXBIWXMAAAsTAAALEwEAmpwYAAAGAGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDUgNzkuMTYzNDk5LCAyMDE4LzA4LzEzLTE2OjQwOjIyICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMTktMTItMTdUMTU6MzE6MjYrMDc6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDE5LTEyLTE3VDE1OjMzOjI5KzA3OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDE5LTEyLTE3VDE1OjMzOjI5KzA3OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmM1YWNhYWRlLTgwYTMtNDlhYi1hN2Q0LTUyODNjYzlhOWI5ZiIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOmQ1Yzg1YTc0LTkwN2EtMDc0NC04MGYzLWI1OTM5MTk0ODRiMSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmY2YzYzODVkLWZhN2UtNDUzYi1hY2RkLTU1NjA0Y2UxMmJjNiI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZjZjNjM4NWQtZmE3ZS00NTNiLWFjZGQtNTU2MDRjZTEyYmM2IiBzdEV2dDp3aGVuPSIyMDE5LTEyLTE3VDE1OjMxOjI2KzA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YzVhY2FhZGUtODBhMy00OWFiLWE3ZDQtNTI4M2NjOWE5YjlmIiBzdEV2dDp3aGVuPSIyMDE5LTEyLTE3VDE1OjMzOjI5KzA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz51TdF5AAAVDUlEQVR4nO2dy5Mbx33Hf909LwxegwWwy+VSXPAhOVKokJTkcuSKyyzH5Ut8SiXHpJKDK7nkb0jlnv/AqVIlqdxySFWOji27kpLjsixREiWFlEju8rXcBbAYPOfR0905DAbAYmfw4K4WmCE+VeByejHTPcB3e37ffiIhBJwVCKEzy2sOfgwA0wr2n2dRkFk4y+8Ln1lOK2LHShwrIlmJY0UkK3GsiGQljhWRrMSxIpKVOFZEshLHikhW4lgRyUocKyKRFl2A0+CfW9kicvR/D/+tkASgEhJQEkgcu19GQZ52fSIDHU9DAnkCQQ2BqAEgL+w8q7T/J3+DoDf9DpaTRIhDcVSVAtwK/y3yO07Q4H9HkKZKIwIEgABKk7plpFqJANReMIPFs3qsrIhkJY4Vkbx04jiNLm8BZ9dtvkheMnEIAIT8nye4BgqulXBQUgb7/Gu1dGs8TQD+KQK46v9fQBCSug77rWPT+yDAq+7yLSEmD/ZZr+AnAABEwedSuvLDIB31rykAvkbAfzJ+3l+Ua7880U2FcKbfV1LEEca/VDdGbk6A6IujftD5R88RrUat9/Dzn8P1aeK49gP4CABgYzvzh4VS+u9Grxm4lb8s75/Jza1Ggp0C/3ZQvnE0BQECAUIIm3vIwQSr2bXU1qzXM9a1y7IibQkQI20eQz0czy/+JFYcHKPK8VQE3OOPgyNFJtnClpyfdq1UXi5m89p1AADBwQQhjgWl4fnFm+SKQ8CNsHTX5fcdh5rBcX5NyukG0aOuo+extlbW3xX9z4oxXgtrUIvKL84kVhwIwr8sj/Jat+Hscc+zgrTSlrwma8dbiyUZyKvf1l9HCKkAAEIIx7HonbBW0aj84kxixSEEbIel2z13VwgQZs1+wjn3AAAwRmhjWythcvRb/9Z30q+pGtYAABAAP6z2fm116L158osziRUHQuhGWHq76ewAAAgBtNdyHgvuh/+SguTSRaUYvO/yzdSltEGM4Xn2J1aT1oPzZ80vziRSHFHOQQjRc3ts0EvqWMxqPB/GH3qGpApbcn7rNWWjtCWfG7zPpg/MA/sBAIDbYz0hRGhPa9IcSyLFEeUcmMd3x9NaddbpNL1ucFzakkvnrmqXg+OuyczaXvf2tOtMyjeuJFMcEc6BuuFf6uFj2qA2cwkBki9KZdL/VByb23d/070nvKO+Neo6SXMsiRTHJKcSls4FiPozt5HfkAZBKRcg7n/Yu+tRYOPvpy4NFQcCdOtFy7yMJFIck5xK1DlXbqavSDIaDP1p17y6XpBC2z8ci4WKLGmOJZHimOZUxqn8QWp71Jl0TGY6PWEHAer4++t7vS/C84XKi5R3WUmcOGZ1KgHlbbm4flE+Hxwf7tGD/R33eXCcX5Nyii7nxs/jTITWHmG9w3ElceKYx6mk8nJx+43Uq8Fxr8XaD25bD+pP/AA1SE/n5PNEIdqRfDivhuUjUHIcS/LEMaNTkVIktVbW30XY/wwcm9t3f9u9y5nvTPZ33BpnggEAYIRx3lAvAB5+XrblfRmWjxArcSwtUY5h1GEgDGR9M/PdoM+EMcG/+m3vS2oNpyB4FFj1sVsLWlARwcpoFz9nLLTmSJJjSZw4ohzDqMMob2XewQQZwfHDT+27vSa3x8+x2tw192kjOFZkktUNdX38erPkH0cSJ44oxxA4jOKm/oaiSReC9P2H7u7h02ET+jjNGus6Nj0MjlMpuaTocu5lcCyJEkeUUwicRbaobqUyyutBumuzh4++sJ9Ou26r7uyPdvEHAWrSHUuixBHlFDjn1VRWzufX9G8Hacxjtepe++NZrovxWBd/P0DlPDzuSIpjSZY4IpyC43j31tbT3wUQBABAcOjtP2n/73ifyeRr+138IDgH8ANUSkVorZMUx5IocYQ7BQGShPIIQ78pHLHDg+4HnIIz7/Udi1m9Nt0fXJkLK2z+SlIcSyImUgcIAduD2Q/BTwGAMCkQmSGEQFg9+oWWkTe0jLwBAPDKG9PnrRQ2cWf0mCiQJ5KUAwIKIAQimCvVzy8pjiVR4jjiFAZ/0AgUhVwHIAAAoGnKrdFzNs7DyRB9HY5UIElxLIl5rCybQ1i28rwIiRHHUYew+HmsAsiNRZfhpCRHHEvmEEQCHi2JEUfgEI7PRVsMKAFDBhMTkAoB24BGbEd/wjH3+BMuoBt1nt0RmWnX1jKoE/U7jCCNJTxojg/WmBIgrs9W8uUlMeJACCpiOOl98LO+3/mnpkmfeA6zws77/H24Oess+3GMslbJGtrNdE79Mz9lWGchQMZ7DcP464Jpzncny0MiHiuBM/CXeEBBpQGciyZgLOcL6raWlo3Tyg9JgNZfyb6VMbS3BQDmnDeHwhjqTPKkG6eV5yJIhDjG+zIQ8pdVEZz73e0IcDonn88a6iYPW1JwDiSNqBsXsrcUjVwa5M+h361/9NJxdyyJeKwIwDfGv3EECOye9zGjokNklAEAUFKksCZrarNhPxXe8bVFp6Fn5LW1Df1dwGgwZNC16D0AAZmcVjlWrpg7lkTUHFHOwHX4jlmzHvW6tCr6JoZIWDeK+iVJI+l58jDKWqW4mf7+UBiItWq93xw86X5GnfBJTnF3LAmpOcT1sKeF26NVAACrRauMciuTV7cQAoIxSDlDvWh16QFMqUAw8eMLRSOXgqhCcOjV9jofOD3aHM0nrFwnurEFE/ua472GYSAYDvkbpVGzB3/RrsU6zXrvIWfcAQBACJCekTfK23IRR8Qhio7l3/+j9LXR+IJRfrD/xPyvQBjj+YwSOJYXu7PFE3txRDkCRtmj42ngNmr2Q9f22kFaOkf0zVeVdUnt98z1Mcok8+b30tdTWTJoB3Eteu/pbut/POd4dROW36TyxYHYiyPKETAuQqt64MDbDffxaBwiq1jZvKydS+WwCgBw/qqy/uq302+SwfTIYXyBIxpgo/KLs2OJfcwhEFRQyNflOixyXizAMA7hTL6CMBAiAd7YVtZTWZLOrpFC8D7qCLf6tPP+6GMkDNdhu4oqvR1WvplvZsmIfc0R5QjoFHEA+HHI3gN733M5RQSRtXPSxqgwuiZr3fnv9ifThDEpvzg7ltiLI8oRRDmIcagNXrfJumub0rqk4sEs+67JWl/9rnuP2hC6l8qs+cXZscRaHLM6lUmcv6qsX30rfY0Q5A8+FgKaNe+w22Stc5e0dT2PtWnXmJRfnB1LrMUxj1MZJ+gf2fqWdhX1PwXqCPfBJ/b/9Zq8AwCACeDyK0oplZPLs5QnaY4l1uKY26n0CesfCeKL+hPa2HtgP6cOdwH67SFpuZwtKK+MTqQOw/P4Tlg6B3xryq0sJfEWR4QTmORU9Iy8dm4r80NJJmtBWv0J3fv8g+7nQXzhOcD2vnIPuq3heh6KJmULJe0SkUGJujaNWFYKRDwdS6zFMa9TCesfeXTHunv/trUD/Oh7uQBR3aX1xj41g/YQTLCaL+qXlBQJHSBkddzQZRlQTGfAxVocszqV8fEXAH7/SPVp5/39XVqflEfzgLVbpvOIc79WQQhIJq++EhaH2FakQ/r+TDe0ZMRWHLM6lbD4Iqx/ZBKezbpmvfeQebwHMIxDjFLqIsLDZveuGW2f32sYlVnyWiZiK45ZnEpYfDGpf2QSwgN6WLN3XYsN1usgMsoUStolSSNqkOZRFvpokTypMk9+y0BsxRHlAALHMGn8RVT/yDSwANE2nb1uiz4DAYMJ1VlDvaToOAcAwLzwtcLi6Fji27cioBLW0e5SVp82/uKk2F1qeh538oZ8ATCWMQKczWsXbJnVqctqaipkJ+MYOpbY1hxhDkCAAEKQcpL4YlY8h1lmzR7EIQAAmk6KnscPw/Zhi6Njia04IMQB+GPP0SBAfNH4YlYYA288DgEhbIRC956NnWOJpTiORf5CQLBTI2OidxrxxayMxyHU5U0AX6jjWcfNscQy5pA8qeJ/7P1ZTP1ZZgAAmZz6p/5P5c9nWV3h946NwDg9hkt2cECAA8ey883leLrEsubwI/9lmBE7H3FzLLEUhx/5n+0GxqdCzBxLLMWBxtbiOMtdml8MX8hxcyyxjDmgH/kPZqfGpxKJlWOJXc0xiPj7U+PjoYthzRanTQJjV3MMnMoRVSBgHntU3ev8tG3SZ8xlx9Yxj+IkSzCMg2QgxXL6DS0tv6ZnlO9hjPyeW4EG5e1v+XF71vItktjVHMOI3/+0g3CDMTAJwVp+Tb2Uyavnpo3aOm0yhrp+/qLxIy0tvwbQX/5BAACII4+9OG0SGLua42ifCup/8AI491spEQKk6mRN1bRst+3u2z3e+iaLoyhEM86l3lRU6eJouueyA0lHV8cffHHa1jx24giP+BG0m84Hrs2aikb8PdkwltN57YKmi06zbu0JcfpN6Ma6djmTU68BGm4cCFzYTdO+rSgkr+nZ746fE6cFbGMnDoiI+O0u3e+atCppxMzl5E1EsALgj7kwyvoV26JVqz151NesaBk5VyhrN4lESkEaQiAci+1U99qfCQ+oopNG+Xz22Llx2tY8VjHHpM39glFYns26jUP7vmXR2nDsJ2A9I28Y69plKUVSL5o/wYCLm+lr5c30H48KgzPRPNzv/urgcfujYFGYJGxrHquag2NUCWs1H9/cT3ggeiY9sGXazBjapixhHQCAEKzl8mqFppjZNp194OPDiqNJ5+WiUUq9gzDOjKz+xXtt98vDWu9u2A4MzOO7kkxeH0+Pi2OJlzgEHFveCWDC9uEUnFbV3knl5EJKl9cRAoIQIEUlhWJZy3Tb7j5M0Yesg7T+SvYtNUUqo5bXo3y/cdD92OmxyGUsqRshDt+x/MfEjJeAWIlj3m3IA6wWbdgWbWUy6rnxgHXzsleuPnZN6h6fE7t5VSmfv6JWFI3UAsuMhHDaLfdT88CaOqsuqlxxcSyxEseRLTNGmLQN+eBcCqzdcJ5KGjEzGXmTyH7Aqqaxtvmqdq5Vpy3zOWsBAOh5rFXeTF3OGGSwG3UQcNYP2neYA25UPuPlyhrqsfS4OJZYiWPebcjD8GzWPXTY/UxeLmuaXAQAwBiQUZbzmTzR5RTRSlvyOTSyFJTgvNOoWR92m/O5nXbT2YmzY4mNW5l3G/JJYOEHrGa998C2/DXCFA2pG5fUC+UL8mYgDCFA7D90Hz9/2PrZvMIAiL9jiY045tmGfOZrUnBqj926lsG6sSGXiTRszHJs7j781Lq3+7n9hM3hamYtX9T9LBOxeazM61RmIVtUt67fUm5iCQ0mR3MmRLfJTKvNuxmDpGUZEUlyZe8FFrUNyhdXxxIbcbyoUwlDTZFUYSP9tiTjjUOLD4TRrHq1Z/ftZ7k1KSerWALwA9ZsSb/iWLTWadH6vAOW4+xYYiOOkziVACQBWivqV/Ws+oZAYnDv1Ob27hfOw8Nn/s7U7UO3a6yTXK4o5zAGhBHglC6vKzIxOl361LPCd2AII9qxoKVfDio24jipU9GysrFW1t/BBOWDP34EwKuP6dNHd6zHjI3UCBzAfM5a3UPWK15U1oLQjMhYCVpYO6ZzIDiwaflGO5blH08ai4D0JE4FSSCXz6evlzfTP8AEDdot/B2puz/f+dTaPSKMEagL3vOv3YNehz4dWYIBKSopGGX9Sior58POG8XtsV5ctzWPRc0xa5/KOBlDPW8UtZuAkTYYgywE7bScO+aB/WDW/K02bdpd2skY6rqsEAMhQBiDpGfkLVkjhV7DfjopYOWcVzEZdtQFLPu25vEQx5xORU2RVKGUuiFp0pF5Ta7jPTKfW5+5cwwjDBAcWPvQ2ZNSxMxk5U1C/FUGZQnr0wJW2/K+zIQ4lmXbtHCcWIhjHqdS3NBfHQ84BYdes279rmM6Bycti2cxy7TYAz0vl9SUXMII8JGAtUP3PPtoZxxnLHRZhmXf1jwW4hACXZ/mVLSsbBRK+ltEQoXRgLPXoV8d1rpfCjo9eJyHXpPW3C5tZozUZrDZD5Gxki+o267Nmp2O8zzI07FYDQrHr7HsfSyxEEdUZN9uOjtIBlIqp69pGfnKaJc680SjUe19aHfoNzaG1POAmjXrkabjXDqrbAD2V0BWNJIvqHrG6tEDq0Ub9b3eF3F0LEvvVqIies5ETVEk4/xF40dqWr46EIYQtNO0P9572PzFNymMUeweb9Wr9n3XYY1g9BlCQPS0vJkraxUsgxpHx7L0NYdAx52K//lzxyin3h1N92zvWa1qfeTZzDnDIvpw4FEBq1HULwNwEwCXjm0SuMSOZfnFIVBluJTBcJabx2BQK/QDzk86pvNsIYUcIQhYU1m5qKXkMiaAEQLkOmxP1fFVFCwb0WeZHcvSi2M0okcj/wKILkIg7A69X6t275x2wHlSrDat2x3ayhf9gJVzYY5Ioi8RtNSOZenFcbRPZfjxUsoPqnvdX9htvz9kGRGiH7BmcE5NkQsh7wAh0NI6lkWK4wYATG1+vvtrtwIwfKT4804FfP1RtwYA3wEIWblvDtyuuDBtruzXv0Yz7ZowCYRsdOUmGXuoIACACkyefd+EBY1UR2e5tgU62ljxS4jZkgQL4lcAcCs4OMvva+mt7IrFsRLHikhW4lgRyUocKyJZiWNFJCtxrIhkkeIwF5h3nDAXlfEixXF7gXnHiduLyniRjWAV8G98aivpS0wT/JbknSDhZWkE2wGAvwL/A1hxnCb4n8/OogqwyJojwAC/efhGyO/+PuJS/3AqBTpb5rmX2+B3L5jjvzjT72sJxDGJqMLFY+Hio5zKvbwsj5UVS85KHCsiWfrBPhMoAgz2lc8AwOjw7s2Q92fH3vOitPuvcfbG3tPp/98FgFNZ//SsWWZxhH3BAT85s1IcJ0pks+waFsYmHBXW0rAs4tjsv4rgf/DFxRbnTPlx/2cd/BqnDr5YFi6YRYlDAYDXwBdEZUFlWDaK/VdlJG0HfJHcA5htBcPT5KzFoQDAtf7r+IomK8ap9F9vAcCd/uvMRHLW4vg+zFdTvPBCbUvISe5FBYC3wa9ZfnY6xZnOssQcUfztogtwisTuXs66hTR4rLwJQxu6YjouAHwGAHeEEGf2WFlU87kC/uNlG3wLuBLKcVwAeAYAu+AHpi7Ay9m3EljZwMa+TFY2oA5DOxtpZV9GcYQRtIAGjWFBI9OkxrFlJ/jCn40cz9WCuhLHbChwtIYZF01Yi+V4M/u8jDaLjzI+u3/0r74Op2g/z/L7+n/0RCj6aXJTxwAAAABJRU5ErkJggg==\", type text),",
+        "    #\"Added Custom1\" = Table.AddColumn(#\"Added Custom\", \"platform_type\", each \"point\", type text),",
+        "    #\"Appended Query\" = Table.Combine({#\"Added Custom1\", site_xy_coordinate, wellsite_boundary, S1_area_component, S1_Reserved_Area}),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Appended Query\",{\"remark\", \"dp_created_datetime\", \"dp_business_datetime\", \"dl_created_datetime\", \"dl_created_by\"}),",
+        "    #\"Trimmed Text\" = Table.TransformColumns(#\"Removed Columns\",{{\"wellsite_name\", Text.Trim, type text}}),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Trimmed Text\",{{\"wellsite_name\", Order.Ascending}, {\"point\", Order.Ascending}}),",
+        "    #\"Filtered Rows1\" = Table.SelectRows(#\"Sorted Rows\", each ([platform_type] <> \"area\" and [platform_type] <> \"point\"))",
+        "in",
+        "    #\"Filtered Rows1\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),\\n    dataset = Source{[Name=gcp_datasource]}[Data],\\n    schema = dataset{[Name=\\\"sandbox_s1_integrated_database_platform\\\",Kind=\\\"Schema\\\"]}[Data],\\n    data = schema{[Name=\\\"wellsite_site_boundary\\\",Kind=\\\"View\\\"]}[Data],\\n    #\\\"Filtered Rows\\\" = Table.SelectRows(data, each ([block] = \\\"S1\\\")),\\n    #\\\"Replaced Value\\\" = Table.ReplaceValue(#\\\"Filtered Rows\\\",\\\" + Acc Rd\\\",\\\"\\\",Replacer.ReplaceText,{\\\"wellsite_name\\\"}),\\n    #\\\"Replaced Value1\\\" = Table.ReplaceValue(#\\\"Replaced Value\\\",\\\".\\\",\\\"\\\",Replacer.ReplaceText,{\\\"wellsite_name\\\"}),\\n    #\\\"Added Custom\\\" = Table.AddColumn(#\\\"Replaced Value1\\\", \\\"icon\\\", each \\\"\\ndata:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAABJ0AAASdAHeZh94AAAAB3RJTUUH5wgXCDk5ZbnxdwAAANVJREFUGJV1kLFOwnAYxH/3958+BA7Y4og7A4Nx8nFMGEhoB4lNF9LH8DVEtz4EXekoD9BwDsSGiPzGuy/fXU62ASiKYo69xJ4BIDVIdVmWnwCyTZ7nL7I3kiJn2O6BdVlV5U3f93PZ7yGEeD+Z8DCdcjcekyQJ34dDAJ4+ttuviL2UFCdZRpZlw7c0TbHNrm3BXoTfTrejEX8ZNHsWLtwrBKQGYN91F+agSU1Eqn08Pu/aNtoe4vZdd+p3Oqxlm2K1KiS9/Rdpe11W1avOBn/EXlwb/AfJrGeecW9BVwAAAABJRU5ErkJggg==\\n\\\", type text),\\n  //  #\\\"Added Custom\\\" = Table.AddColumn(data, \\\"icon\\\", each \\\"data:image/jpeg;base64, iVBORw0KGgoAAAANSUhEUgAAAIcAAACHCAYAAAA850oKAAAACXBIWXMAAAsTAAALEwEAmpwYAAAGAGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDUgNzkuMTYzNDk5LCAyMDE4LzA4LzEzLTE2OjQwOjIyICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMTktMTItMTdUMTU6MzE6MjYrMDc6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDE5LTEyLTE3VDE1OjMzOjI5KzA3OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDE5LTEyLTE3VDE1OjMzOjI5KzA3OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmM1YWNhYWRlLTgwYTMtNDlhYi1hN2Q0LTUyODNjYzlhOWI5ZiIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOmQ1Yzg1YTc0LTkwN2EtMDc0NC04MGYzLWI1OTM5MTk0ODRiMSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmY2YzYzODVkLWZhN2UtNDUzYi1hY2RkLTU1NjA0Y2UxMmJjNiI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZjZjNjM4NWQtZmE3ZS00NTNiLWFjZGQtNTU2MDRjZTEyYmM2IiBzdEV2dDp3aGVuPSIyMDE5LTEyLTE3VDE1OjMxOjI2KzA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YzVhY2FhZGUtODBhMy00OWFiLWE3ZDQtNTI4M2NjOWE5YjlmIiBzdEV2dDp3aGVuPSIyMDE5LTEyLTE3VDE1OjMzOjI5KzA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz51TdF5AAAVDUlEQVR4nO2dy5Mbx33Hf909LwxegwWwy+VSXPAhOVKokJTkcuSKyyzH5Ut8SiXHpJKDK7nkb0jlnv/AqVIlqdxySFWOji27kpLjsixREiWFlEju8rXcBbAYPOfR0905DAbAYmfw4K4WmCE+VeByejHTPcB3e37ffiIhBJwVCKEzy2sOfgwA0wr2n2dRkFk4y+8Ln1lOK2LHShwrIlmJY0UkK3GsiGQljhWRrMSxIpKVOFZEshLHikhW4lgRyUocKyKRFl2A0+CfW9kicvR/D/+tkASgEhJQEkgcu19GQZ52fSIDHU9DAnkCQQ2BqAEgL+w8q7T/J3+DoDf9DpaTRIhDcVSVAtwK/y3yO07Q4H9HkKZKIwIEgABKk7plpFqJANReMIPFs3qsrIhkJY4Vkbx04jiNLm8BZ9dtvkheMnEIAIT8nye4BgqulXBQUgb7/Gu1dGs8TQD+KQK46v9fQBCSug77rWPT+yDAq+7yLSEmD/ZZr+AnAABEwedSuvLDIB31rykAvkbAfzJ+3l+Ua7880U2FcKbfV1LEEca/VDdGbk6A6IujftD5R88RrUat9/Dzn8P1aeK49gP4CABgYzvzh4VS+u9Grxm4lb8s75/Jza1Ggp0C/3ZQvnE0BQECAUIIm3vIwQSr2bXU1qzXM9a1y7IibQkQI20eQz0czy/+JFYcHKPK8VQE3OOPgyNFJtnClpyfdq1UXi5m89p1AADBwQQhjgWl4fnFm+SKQ8CNsHTX5fcdh5rBcX5NyukG0aOuo+extlbW3xX9z4oxXgtrUIvKL84kVhwIwr8sj/Jat+Hscc+zgrTSlrwma8dbiyUZyKvf1l9HCKkAAEIIx7HonbBW0aj84kxixSEEbIel2z13VwgQZs1+wjn3AAAwRmhjWythcvRb/9Z30q+pGtYAABAAP6z2fm116L158osziRUHQuhGWHq76ewAAAgBtNdyHgvuh/+SguTSRaUYvO/yzdSltEGM4Xn2J1aT1oPzZ80vziRSHFHOQQjRc3ts0EvqWMxqPB/GH3qGpApbcn7rNWWjtCWfG7zPpg/MA/sBAIDbYz0hRGhPa9IcSyLFEeUcmMd3x9NaddbpNL1ucFzakkvnrmqXg+OuyczaXvf2tOtMyjeuJFMcEc6BuuFf6uFj2qA2cwkBki9KZdL/VByb23d/070nvKO+Neo6SXMsiRTHJKcSls4FiPozt5HfkAZBKRcg7n/Yu+tRYOPvpy4NFQcCdOtFy7yMJFIck5xK1DlXbqavSDIaDP1p17y6XpBC2z8ci4WKLGmOJZHimOZUxqn8QWp71Jl0TGY6PWEHAer4++t7vS/C84XKi5R3WUmcOGZ1KgHlbbm4flE+Hxwf7tGD/R33eXCcX5Nyii7nxs/jTITWHmG9w3ElceKYx6mk8nJx+43Uq8Fxr8XaD25bD+pP/AA1SE/n5PNEIdqRfDivhuUjUHIcS/LEMaNTkVIktVbW30XY/wwcm9t3f9u9y5nvTPZ33BpnggEAYIRx3lAvAB5+XrblfRmWjxArcSwtUY5h1GEgDGR9M/PdoM+EMcG/+m3vS2oNpyB4FFj1sVsLWlARwcpoFz9nLLTmSJJjSZw4ohzDqMMob2XewQQZwfHDT+27vSa3x8+x2tw192kjOFZkktUNdX38erPkH0cSJ44oxxA4jOKm/oaiSReC9P2H7u7h02ET+jjNGus6Nj0MjlMpuaTocu5lcCyJEkeUUwicRbaobqUyyutBumuzh4++sJ9Ou26r7uyPdvEHAWrSHUuixBHlFDjn1VRWzufX9G8Hacxjtepe++NZrovxWBd/P0DlPDzuSIpjSZY4IpyC43j31tbT3wUQBABAcOjtP2n/73ifyeRr+138IDgH8ANUSkVorZMUx5IocYQ7BQGShPIIQ78pHLHDg+4HnIIz7/Udi1m9Nt0fXJkLK2z+SlIcSyImUgcIAduD2Q/BTwGAMCkQmSGEQFg9+oWWkTe0jLwBAPDKG9PnrRQ2cWf0mCiQJ5KUAwIKIAQimCvVzy8pjiVR4jjiFAZ/0AgUhVwHIAAAoGnKrdFzNs7DyRB9HY5UIElxLIl5rCybQ1i28rwIiRHHUYew+HmsAsiNRZfhpCRHHEvmEEQCHi2JEUfgEI7PRVsMKAFDBhMTkAoB24BGbEd/wjH3+BMuoBt1nt0RmWnX1jKoE/U7jCCNJTxojg/WmBIgrs9W8uUlMeJACCpiOOl98LO+3/mnpkmfeA6zws77/H24Oess+3GMslbJGtrNdE79Mz9lWGchQMZ7DcP464Jpzncny0MiHiuBM/CXeEBBpQGciyZgLOcL6raWlo3Tyg9JgNZfyb6VMbS3BQDmnDeHwhjqTPKkG6eV5yJIhDjG+zIQ8pdVEZz73e0IcDonn88a6iYPW1JwDiSNqBsXsrcUjVwa5M+h361/9NJxdyyJeKwIwDfGv3EECOye9zGjokNklAEAUFKksCZrarNhPxXe8bVFp6Fn5LW1Df1dwGgwZNC16D0AAZmcVjlWrpg7lkTUHFHOwHX4jlmzHvW6tCr6JoZIWDeK+iVJI+l58jDKWqW4mf7+UBiItWq93xw86X5GnfBJTnF3LAmpOcT1sKeF26NVAACrRauMciuTV7cQAoIxSDlDvWh16QFMqUAw8eMLRSOXgqhCcOjV9jofOD3aHM0nrFwnurEFE/ua472GYSAYDvkbpVGzB3/RrsU6zXrvIWfcAQBACJCekTfK23IRR8Qhio7l3/+j9LXR+IJRfrD/xPyvQBjj+YwSOJYXu7PFE3txRDkCRtmj42ngNmr2Q9f22kFaOkf0zVeVdUnt98z1Mcok8+b30tdTWTJoB3Eteu/pbut/POd4dROW36TyxYHYiyPKETAuQqt64MDbDffxaBwiq1jZvKydS+WwCgBw/qqy/uq302+SwfTIYXyBIxpgo/KLs2OJfcwhEFRQyNflOixyXizAMA7hTL6CMBAiAd7YVtZTWZLOrpFC8D7qCLf6tPP+6GMkDNdhu4oqvR1WvplvZsmIfc0R5QjoFHEA+HHI3gN733M5RQSRtXPSxqgwuiZr3fnv9ifThDEpvzg7ltiLI8oRRDmIcagNXrfJumub0rqk4sEs+67JWl/9rnuP2hC6l8qs+cXZscRaHLM6lUmcv6qsX30rfY0Q5A8+FgKaNe+w22Stc5e0dT2PtWnXmJRfnB1LrMUxj1MZJ+gf2fqWdhX1PwXqCPfBJ/b/9Zq8AwCACeDyK0oplZPLs5QnaY4l1uKY26n0CesfCeKL+hPa2HtgP6cOdwH67SFpuZwtKK+MTqQOw/P4Tlg6B3xryq0sJfEWR4QTmORU9Iy8dm4r80NJJmtBWv0J3fv8g+7nQXzhOcD2vnIPuq3heh6KJmULJe0SkUGJujaNWFYKRDwdS6zFMa9TCesfeXTHunv/trUD/Oh7uQBR3aX1xj41g/YQTLCaL+qXlBQJHSBkddzQZRlQTGfAxVocszqV8fEXAH7/SPVp5/39XVqflEfzgLVbpvOIc79WQQhIJq++EhaH2FakQ/r+TDe0ZMRWHLM6lbD4Iqx/ZBKezbpmvfeQebwHMIxDjFLqIsLDZveuGW2f32sYlVnyWiZiK45ZnEpYfDGpf2QSwgN6WLN3XYsN1usgMsoUStolSSNqkOZRFvpokTypMk9+y0BsxRHlAALHMGn8RVT/yDSwANE2nb1uiz4DAYMJ1VlDvaToOAcAwLzwtcLi6Fji27cioBLW0e5SVp82/uKk2F1qeh538oZ8ATCWMQKczWsXbJnVqctqaipkJ+MYOpbY1hxhDkCAAEKQcpL4YlY8h1lmzR7EIQAAmk6KnscPw/Zhi6Njia04IMQB+GPP0SBAfNH4YlYYA288DgEhbIRC956NnWOJpTiORf5CQLBTI2OidxrxxayMxyHU5U0AX6jjWcfNscQy5pA8qeJ/7P1ZTP1ZZgAAmZz6p/5P5c9nWV3h946NwDg9hkt2cECAA8ey883leLrEsubwI/9lmBE7H3FzLLEUhx/5n+0GxqdCzBxLLMWBxtbiOMtdml8MX8hxcyyxjDmgH/kPZqfGpxKJlWOJXc0xiPj7U+PjoYthzRanTQJjV3MMnMoRVSBgHntU3ev8tG3SZ8xlx9Yxj+IkSzCMg2QgxXL6DS0tv6ZnlO9hjPyeW4EG5e1v+XF71vItktjVHMOI3/+0g3CDMTAJwVp+Tb2Uyavnpo3aOm0yhrp+/qLxIy0tvwbQX/5BAACII4+9OG0SGLua42ifCup/8AI491spEQKk6mRN1bRst+3u2z3e+iaLoyhEM86l3lRU6eJouueyA0lHV8cffHHa1jx24giP+BG0m84Hrs2aikb8PdkwltN57YKmi06zbu0JcfpN6Ma6djmTU68BGm4cCFzYTdO+rSgkr+nZ746fE6cFbGMnDoiI+O0u3e+atCppxMzl5E1EsALgj7kwyvoV26JVqz151NesaBk5VyhrN4lESkEaQiAci+1U99qfCQ+oopNG+Xz22Llx2tY8VjHHpM39glFYns26jUP7vmXR2nDsJ2A9I28Y69plKUVSL5o/wYCLm+lr5c30H48KgzPRPNzv/urgcfujYFGYJGxrHquag2NUCWs1H9/cT3ggeiY9sGXazBjapixhHQCAEKzl8mqFppjZNp194OPDiqNJ5+WiUUq9gzDOjKz+xXtt98vDWu9u2A4MzOO7kkxeH0+Pi2OJlzgEHFveCWDC9uEUnFbV3knl5EJKl9cRAoIQIEUlhWJZy3Tb7j5M0Yesg7T+SvYtNUUqo5bXo3y/cdD92OmxyGUsqRshDt+x/MfEjJeAWIlj3m3IA6wWbdgWbWUy6rnxgHXzsleuPnZN6h6fE7t5VSmfv6JWFI3UAsuMhHDaLfdT88CaOqsuqlxxcSyxEseRLTNGmLQN+eBcCqzdcJ5KGjEzGXmTyH7Aqqaxtvmqdq5Vpy3zOWsBAOh5rFXeTF3OGGSwG3UQcNYP2neYA25UPuPlyhrqsfS4OJZYiWPebcjD8GzWPXTY/UxeLmuaXAQAwBiQUZbzmTzR5RTRSlvyOTSyFJTgvNOoWR92m/O5nXbT2YmzY4mNW5l3G/JJYOEHrGa998C2/DXCFA2pG5fUC+UL8mYgDCFA7D90Hz9/2PrZvMIAiL9jiY045tmGfOZrUnBqj926lsG6sSGXiTRszHJs7j781Lq3+7n9hM3hamYtX9T9LBOxeazM61RmIVtUt67fUm5iCQ0mR3MmRLfJTKvNuxmDpGUZEUlyZe8FFrUNyhdXxxIbcbyoUwlDTZFUYSP9tiTjjUOLD4TRrHq1Z/ftZ7k1KSerWALwA9ZsSb/iWLTWadH6vAOW4+xYYiOOkziVACQBWivqV/Ws+oZAYnDv1Ob27hfOw8Nn/s7U7UO3a6yTXK4o5zAGhBHglC6vKzIxOl361LPCd2AII9qxoKVfDio24jipU9GysrFW1t/BBOWDP34EwKuP6dNHd6zHjI3UCBzAfM5a3UPWK15U1oLQjMhYCVpYO6ZzIDiwaflGO5blH08ai4D0JE4FSSCXz6evlzfTP8AEDdot/B2puz/f+dTaPSKMEagL3vOv3YNehz4dWYIBKSopGGX9Sior58POG8XtsV5ctzWPRc0xa5/KOBlDPW8UtZuAkTYYgywE7bScO+aB/WDW/K02bdpd2skY6rqsEAMhQBiDpGfkLVkjhV7DfjopYOWcVzEZdtQFLPu25vEQx5xORU2RVKGUuiFp0pF5Ta7jPTKfW5+5cwwjDBAcWPvQ2ZNSxMxk5U1C/FUGZQnr0wJW2/K+zIQ4lmXbtHCcWIhjHqdS3NBfHQ84BYdes279rmM6Bycti2cxy7TYAz0vl9SUXMII8JGAtUP3PPtoZxxnLHRZhmXf1jwW4hACXZ/mVLSsbBRK+ltEQoXRgLPXoV8d1rpfCjo9eJyHXpPW3C5tZozUZrDZD5Gxki+o267Nmp2O8zzI07FYDQrHr7HsfSyxEEdUZN9uOjtIBlIqp69pGfnKaJc680SjUe19aHfoNzaG1POAmjXrkabjXDqrbAD2V0BWNJIvqHrG6tEDq0Ub9b3eF3F0LEvvVqIies5ETVEk4/xF40dqWr46EIYQtNO0P9572PzFNymMUeweb9Wr9n3XYY1g9BlCQPS0vJkraxUsgxpHx7L0NYdAx52K//lzxyin3h1N92zvWa1qfeTZzDnDIvpw4FEBq1HULwNwEwCXjm0SuMSOZfnFIVBluJTBcJabx2BQK/QDzk86pvNsIYUcIQhYU1m5qKXkMiaAEQLkOmxP1fFVFCwb0WeZHcvSi2M0okcj/wKILkIg7A69X6t275x2wHlSrDat2x3ayhf9gJVzYY5Ioi8RtNSOZenFcbRPZfjxUsoPqnvdX9htvz9kGRGiH7BmcE5NkQsh7wAh0NI6lkWK4wYATG1+vvtrtwIwfKT4804FfP1RtwYA3wEIWblvDtyuuDBtruzXv0Yz7ZowCYRsdOUmGXuoIACACkyefd+EBY1UR2e5tgU62ljxS4jZkgQL4lcAcCs4OMvva+mt7IrFsRLHikhW4lgRyUocKyJZiWNFJCtxrIhkkeIwF5h3nDAXlfEixXF7gXnHiduLyniRjWAV8G98aivpS0wT/JbknSDhZWkE2wGAvwL/A1hxnCb4n8/OogqwyJojwAC/efhGyO/+PuJS/3AqBTpb5rmX2+B3L5jjvzjT72sJxDGJqMLFY+Hio5zKvbwsj5UVS85KHCsiWfrBPhMoAgz2lc8AwOjw7s2Q92fH3vOitPuvcfbG3tPp/98FgFNZ//SsWWZxhH3BAT85s1IcJ0pks+waFsYmHBXW0rAs4tjsv4rgf/DFxRbnTPlx/2cd/BqnDr5YFi6YRYlDAYDXwBdEZUFlWDaK/VdlJG0HfJHcA5htBcPT5KzFoQDAtf7r+IomK8ap9F9vAcCd/uvMRHLW4vg+zFdTvPBCbUvISe5FBYC3wa9ZfnY6xZnOssQcUfztogtwisTuXs66hTR4rLwJQxu6YjouAHwGAHeEEGf2WFlU87kC/uNlG3wLuBLKcVwAeAYAu+AHpi7Ay9m3EljZwMa+TFY2oA5DOxtpZV9GcYQRtIAGjWFBI9OkxrFlJ/jCn40cz9WCuhLHbChwtIYZF01Yi+V4M/u8jDaLjzI+u3/0r74Op2g/z/L7+n/0RCj6aXJTxwAAAABJRU5ErkJggg==\\\", type text),\\n    #\\\"Added Custom1\\\" = Table.AddColumn(#\\\"Added Custom\\\", \\\"platform_type\\\", each \\\"point\\\", type text),\\n    #\\\"Appended Query\\\" = Table.Combine({#\\\"Added Custom1\\\", site_xy_coordinate, wellsite_boundary, S1_area_component, S1_Reserved_Area}),\\n    #\\\"Removed Columns\\\" = Table.RemoveColumns(#\\\"Appended Query\\\",{\\\"remark\\\", \\\"dp_created_datetime\\\", \\\"dp_business_datetime\\\", \\\"dl_created_datetime\\\", \\\"dl_created_by\\\"}),\\n    #\\\"Trimmed Text\\\" = Table.TransformColumns(#\\\"Removed Columns\\\",{{\\\"wellsite_name\\\", Text.Trim, type text}}),\\n    #\\\"Sorted Rows\\\" = Table.Sort(#\\\"Trimmed Text\\\",{{\\\"wellsite_name\\\", Order.Ascending}, {\\\"point\\\", Order.Ascending}}),\\n    #\\\"Filtered Rows1\\\" = Table.SelectRows(#\\\"Sorted Rows\\\", each ([platform_type] <> \\\"area\\\" and [platform_type] <> \\\"point\\\"))\\nin\\n    #\\\"Filtered Rows1\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "wellsite_area_boundary",
+      "lineageTag": "65c3078e-16db-487a-b4d7-ac3a316a842f",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"wellsite_site_boundary\",Kind=\"View\"]}[Data],",
+        "    #\"Sorted Rows1\" = Table.Sort(data,{{\"wellsite_name\", Order.Ascending}}),",
+        "    #\"Filtered Rows\" = Table.SelectRows(#\"Sorted Rows1\", each ([block] = \"S1\")),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Filtered Rows\",\" + Acc Rd\",\"\",Replacer.ReplaceText,{\"wellsite_name\"}),",
+        "    #\"Replaced Value1\" = Table.ReplaceValue(#\"Replaced Value\",\".\",\"\",Replacer.ReplaceText,{\"wellsite_name\"}),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Replaced Value1\", \"icon\", each \"",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAABJ0AAASdAHeZh94AAAAB3RJTUUH5wgXCDk5ZbnxdwAAANVJREFUGJV1kLFOwnAYxH/3958+BA7Y4og7A4Nx8nFMGEhoB4lNF9LH8DVEtz4EXekoD9BwDsSGiPzGuy/fXU62ASiKYo69xJ4BIDVIdVmWnwCyTZ7nL7I3kiJn2O6BdVlV5U3f93PZ7yGEeD+Z8DCdcjcekyQJ34dDAJ4+ttuviL2UFCdZRpZlw7c0TbHNrm3BXoTfTrejEX8ZNHsWLtwrBKQGYN91F+agSU1Eqn08Pu/aNtoe4vZdd+p3Oqxlm2K1KiS9/Rdpe11W1avOBn/EXlwb/AfJrGeecW9BVwAAAABJRU5ErkJggg==",
+        "\", type text),",
+        "    #\"Added Custom1\" = Table.AddColumn(#\"Added Custom\", \"platform_type\", each \"point\", type text),",
+        "    #\"Appended Query\" = Table.Combine({#\"Added Custom1\", site_xy_coordinate, wellsite_boundary, S1_area_component, S1_Reserved_Area}),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Appended Query\",{\"point\", \"remark\", \"dp_created_datetime\", \"dp_business_datetime\", \"dl_created_datetime\", \"dl_created_by\"}),",
+        "    #\"Trimmed Text\" = Table.TransformColumns(#\"Removed Columns\",{{\"wellsite_name\", Text.Trim, type text}}),",
+        "    #\"Filtered Rows1\" = Table.SelectRows(#\"Trimmed Text\", each ([platform_type] <> \"point\" and [platform_type] <> \"wellsite\")),",
+        "    #\"Merged Queries\" = Table.NestedJoin(#\"Filtered Rows1\", {\"wellsite_name\"}, site_xy_coordinate, {\"wellsite_name\"}, \"site_xy_coordinate\", JoinKind.LeftOuter),",
+        "    #\"Expanded site_xy_coordinate\" = Table.ExpandTableColumn(#\"Merged Queries\", \"site_xy_coordinate\", {\"latitude\", \"longitude\"}, {\"lat\", \"long\"}),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Expanded site_xy_coordinate\",{{\"wellsite_name\", Order.Ascending}})",
+        "in",
+        "    #\"Sorted Rows\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),\\n    dataset = Source{[Name=gcp_datasource]}[Data],\\n    schema = dataset{[Name=\\\"sandbox_s1_integrated_database_platform\\\",Kind=\\\"Schema\\\"]}[Data],\\n    data = schema{[Name=\\\"wellsite_site_boundary\\\",Kind=\\\"View\\\"]}[Data],\\n    #\\\"Sorted Rows1\\\" = Table.Sort(data,{{\\\"wellsite_name\\\", Order.Ascending}}),\\n    #\\\"Filtered Rows\\\" = Table.SelectRows(#\\\"Sorted Rows1\\\", each ([block] = \\\"S1\\\")),\\n    #\\\"Replaced Value\\\" = Table.ReplaceValue(#\\\"Filtered Rows\\\",\\\" + Acc Rd\\\",\\\"\\\",Replacer.ReplaceText,{\\\"wellsite_name\\\"}),\\n    #\\\"Replaced Value1\\\" = Table.ReplaceValue(#\\\"Replaced Value\\\",\\\".\\\",\\\"\\\",Replacer.ReplaceText,{\\\"wellsite_name\\\"}),\\n    #\\\"Added Custom\\\" = Table.AddColumn(#\\\"Replaced Value1\\\", \\\"icon\\\", each \\\"\\ndata:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAABJ0AAASdAHeZh94AAAAB3RJTUUH5wgXCDk5ZbnxdwAAANVJREFUGJV1kLFOwnAYxH/3958+BA7Y4og7A4Nx8nFMGEhoB4lNF9LH8DVEtz4EXekoD9BwDsSGiPzGuy/fXU62ASiKYo69xJ4BIDVIdVmWnwCyTZ7nL7I3kiJn2O6BdVlV5U3f93PZ7yGEeD+Z8DCdcjcekyQJ34dDAJ4+ttuviL2UFCdZRpZlw7c0TbHNrm3BXoTfTrejEX8ZNHsWLtwrBKQGYN91F+agSU1Eqn08Pu/aNtoe4vZdd+p3Oqxlm2K1KiS9/Rdpe11W1avOBn/EXlwb/AfJrGeecW9BVwAAAABJRU5ErkJggg==\\n\\\", type text),\\n    #\\\"Added Custom1\\\" = Table.AddColumn(#\\\"Added Custom\\\", \\\"platform_type\\\", each \\\"point\\\", type text),\\n    #\\\"Appended Query\\\" = Table.Combine({#\\\"Added Custom1\\\", site_xy_coordinate, wellsite_boundary, S1_area_component, S1_Reserved_Area}),\\n    #\\\"Removed Columns\\\" = Table.RemoveColumns(#\\\"Appended Query\\\",{\\\"point\\\", \\\"remark\\\", \\\"dp_created_datetime\\\", \\\"dp_business_datetime\\\", \\\"dl_created_datetime\\\", \\\"dl_created_by\\\"}),\\n    #\\\"Trimmed Text\\\" = Table.TransformColumns(#\\\"Removed Columns\\\",{{\\\"wellsite_name\\\", Text.Trim, type text}}),\\n    #\\\"Filtered Rows1\\\" = Table.SelectRows(#\\\"Trimmed Text\\\", each ([platform_type] <> \\\"point\\\" and [platform_type] <> \\\"wellsite\\\")),\\n    #\\\"Merged Queries\\\" = Table.NestedJoin(#\\\"Filtered Rows1\\\", {\\\"wellsite_name\\\"}, site_xy_coordinate, {\\\"wellsite_name\\\"}, \\\"site_xy_coordinate\\\", JoinKind.LeftOuter),\\n    #\\\"Expanded site_xy_coordinate\\\" = Table.ExpandTableColumn(#\\\"Merged Queries\\\", \\\"site_xy_coordinate\\\", {\\\"latitude\\\", \\\"longitude\\\"}, {\\\"lat\\\", \\\"long\\\"}),\\n    #\\\"Sorted Rows\\\" = Table.Sort(#\\\"Expanded site_xy_coordinate\\\",{{\\\"wellsite_name\\\", Order.Ascending}})\\nin\\n    #\\\"Sorted Rows\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "Land Type",
+      "lineageTag": "aa9d10a5-fb83-4129-8ae3-d9a62e3855f5",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"s1_wellsite_data\",Kind=\"View\"]}[Data],",
+        "    #\"Trimmed Text\" = Table.TransformColumns(data,{{\"wellsite_name\", Text.Trim, type text}}),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Trimmed Text\",{{\"wellsite_name\", Order.Ascending}}),",
+        "    #\"Appended Query\" = Table.Combine({#\"Sorted Rows\", S1_area_component}),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Appended Query\",{\"icon\", \"platform_type\", \"block\"}),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Removed Columns\",null,\"ไม่มีการระบุข้อมูล\",Replacer.ReplaceValue,{\"land_color_code\", \"area_1\" }),",
+        "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Replaced Value\",{\"area_1\"}),",
+        "    #\"Removed Duplicates\" = Table.Distinct(#\"Removed Other Columns\"),",
+        "    #\"Sorted Rows1\" = Table.Sort(#\"Removed Duplicates\",{{\"area_1\", Order.Ascending}}),",
+        "    #\"Renamed Columns\" = Table.RenameColumns(#\"Sorted Rows1\",{{\"area_1\", \"Land Type\"}})",
+        "in",
+        "    #\"Renamed Columns\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),\\n    dataset = Source{[Name=gcp_datasource]}[Data],\\n    schema = dataset{[Name=\\\"sandbox_s1_integrated_database_platform\\\",Kind=\\\"Schema\\\"]}[Data],\\n    data = schema{[Name=\\\"s1_wellsite_data\\\",Kind=\\\"View\\\"]}[Data],\\n    #\\\"Trimmed Text\\\" = Table.TransformColumns(data,{{\\\"wellsite_name\\\", Text.Trim, type text}}),\\n    #\\\"Sorted Rows\\\" = Table.Sort(#\\\"Trimmed Text\\\",{{\\\"wellsite_name\\\", Order.Ascending}}),\\n    #\\\"Appended Query\\\" = Table.Combine({#\\\"Sorted Rows\\\", S1_area_component}),\\n    #\\\"Removed Columns\\\" = Table.RemoveColumns(#\\\"Appended Query\\\",{\\\"icon\\\", \\\"platform_type\\\", \\\"block\\\"}),\\n    #\\\"Replaced Value\\\" = Table.ReplaceValue(#\\\"Removed Columns\\\",null,\\\"ไม่มีการระบุข้อมูล\\\",Replacer.ReplaceValue,{\\\"land_color_code\\\", \\\"area_1\\\" }),\\n    #\\\"Removed Other Columns\\\" = Table.SelectColumns(#\\\"Replaced Value\\\",{\\\"area_1\\\"}),\\n    #\\\"Removed Duplicates\\\" = Table.Distinct(#\\\"Removed Other Columns\\\"),\\n    #\\\"Sorted Rows1\\\" = Table.Sort(#\\\"Removed Duplicates\\\",{{\\\"area_1\\\", Order.Ascending}}),\\n    #\\\"Renamed Columns\\\" = Table.RenameColumns(#\\\"Sorted Rows1\\\",{{\\\"area_1\\\", \\\"Land Type\\\"}})\\nin\\n    #\\\"Renamed Columns\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "S1_area_component",
+      "lineageTag": "e6dffc66-c6a9-4bb2-b61f-ac2c03132ee5",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "text": [
+        "let",
+        "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"dZfLjpg1DIVfpeqqI1Wj+BJfngAhFVoJWKCqCzasQEiI9xcn8Z9LEd3NzDd/4jjn2M7nz29/orfv3/7wy4efv//08cOv33388d27d5mvmeZK3SjfkL+yShNpPeP9mw0zMyakaNLJO71/Q629NmnNqQkd6KR+Q3KfsKXjD9HjgWou3VIOxK/9hiEVUCPx5uxrWScXNtINiYT1htnmnhTqrYfL2tNEWzONA8HyhjlXJYumTYP4iseU5UAm0ht6xUMd8Wh2XltKYCHtdmBQfAUjeUI2ceSjrRwQ4gkiO7Cz2w1DZ94bTkLaqK8vmVyRiDiQENIF8UPBcZQkFT/LUvPQA5GSG1JvfUIEFIrcrmVbb+7IxIHaVS+IY+Mo9poIiAfWKyDWvhk2aXYzF58Q8fSkxuvCkFXB/8aBGirfgo7z+HXVqmQHSudbB/PCwHoiHmeSS10WfFicQw7mXWpHWMHIcqsdLhKV4bAHQvLbRBPCVBMid4kt7UkBIXdmKheMvq6kICdNKPgM2uNHtCQwUBfhDaPx0siEcMKEgRSY4dcnIELaEasdZrk0OxmzFuxDdyorPQHDw0KyGTTR+ILEPFMQCEd6b18lL3AVB4qvg0yY3GtZJM8bFLKEN4pMVnoGs1Q1uVnSXBWqhisEpeLYFhqIfmB38wt2aG/AYcqglsFn2UCV0w1byB1PIEdzT0MOCFcm97Km6gda73rDsJkgY5QbFNZcTujDX9DMgeQ38pyLdhykGwx22x25ywO57eI0IDasHZG8MJbx5VP3u3IrY06Iz1kuCLdVfiABxqFdC+KiE0ubH4iQ+oaRKUZn2R78fImLxm9ZN11QO18M8RdDkwqNaFkQSU9U/aYHQmlxIGzwwLGqRqMFYxQYoxOPpjBfEPeX6ySE2CyvgCC965i4ijgQdqs9cauoopErtWPZSK/UFhSPa09cWJsGU2hEoAOjCeEQSHQofEOCni72uARngA8RuRdDqxDNLPMV7ER0wVHIpkbGQdAxjB8Ir0E+csFGow1tCJEWhG07UtLrlCGAEFx5ekLzkIshX6VZnIN5lLIJHQfxJGu8IXXUgwMNH5enUapFsNCzLCYTS1ztgSO7dEElmbnD0IJYLW6G+OZBfFw0OlLXDfHv5PQtCN+I7FXR0/mGsLXteLCj+znJuC/fsOcjnzolQq+D4AdHGVlbwrXwdFQzmRCWNjsQE5FUmYUT0DwQw1m2IwV+4OjaByocXp0G3R53kOsk48IYisoNGePeddOYCp8iPBoGrlPzgdgHqqDTTVBjlroGhHBLeqMIo+rnFhd8Mc59WOrj6YIYSv3kIHXJAOYbuZWTPbS+zAPR8csnPpoU1Jb9eIhRc2hDpJnsguh/1THcsB/CeGyL4WhMPU+0Aypcmwd21HLe7U06XFUQN4bJRWrPgpBTXhBzYz4tVTJQ+3UXNhSVx2EFxwx2YIz2MiF+NZRAKb3jIqGD5qXagmqPhCZEASLZI1nDHx6IwQCn5uQN0YhEvwVFRK/Kj+LpZ9ITzIh0IMM4NVxiwEHqVzzjBYLg1A7DsnRBFuI97GLsIz8Q9fP58j9wjM+MTWRDRpG2AyG9ehKh98PZYb5jHWVf7DAXuRhz1BMD7QSh2uo14zKhhJraJ2Towi7IXg+iOe9j1F65GwKCAZ9wBkRTbxdEBM/rBK7GTAb1F0RZjTHc5IFN5YZ47NF+nTBayOk1HeWBz9MFGo4L4ixR7ywICI83+GgHRNDp8+WEEFVcELbebzuLPl9oS7QoQfV0KTha8AVxDbSfjBjC2pJ7jElrzskLWtMLYrirR8984EK1/Qw6//f6fXl5wWv50x+//fP7X3//iR/xev7y5V8=\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [wellsite_name = _t, icon = _t, platform_type = _t, block = _t]),",
+        "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"wellsite_name\", type text}, {\"icon\", type text}})",
+        "in",
+        "    #\"Changed Type\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "S1_area_w_land_type",
+      "lineageTag": "d477bba5-e812-4336-b96b-9c951d9e649a",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = Table.NestedJoin(S1_area_component, {\"wellsite_name\"}, #\"Land Type\", {\"Land Type\"}, \"Land Type\", JoinKind.FullOuter),",
+        "    #\"Expanded Land Type\" = Table.ExpandTableColumn(Source, \"Land Type\", {\"Land Type\"}, {\"Land Type.1\"}),",
+        "    #\"Filled Up\" = Table.FillUp(#\"Expanded Land Type\",{\"wellsite_name\", \"icon\", \"platform_type\", \"block\"}),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Filled Up\",null,\"ไม่มีการระบุข้อมูล\",Replacer.ReplaceValue,{\"Land Type.1\"}),",
+        "    #\"Removed Duplicates\" = Table.Distinct(#\"Replaced Value\"),",
+        "    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Duplicates\",{{\"Land Type.1\", \"area_1\"}})",
+        "in",
+        "    #\"Renamed Columns\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "S1_Reserved_Area",
+      "lineageTag": "b5a9861c-eae3-455f-8802-a67ae4c2ddff",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = Excel.Workbook(File.Contents(\"C:\\Users\\User\\Downloads\\S1_Reserved_Area.xlsx\"), null, true),",
+        "    Sheet1_Sheet = Source{[Item=\"Sheet1\",Kind=\"Sheet\"]}[Data],",
+        "    #\"Removed Top Rows\" = Table.Skip(Sheet1_Sheet,1),",
+        "    #\"Promoted Headers\" = Table.PromoteHeaders(#\"Removed Top Rows\", [PromoteAllScalars=true]),",
+        "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Promoted Headers\",{{\"No.\", Int64.Type}, {\"Name\", type text}, {\"Point\", Int64.Type}, {\"X\", type number}, {\"Y\", type number}, {\"Latitude\", type text}, {\"Longtitude\", type text}}),",
+        "    #\"Filtered Rows\" = Table.SelectRows(#\"Changed Type\", each ([Name] <> null)),",
+        "    #\"Merged Columns\" = Table.CombineColumns(#\"Filtered Rows\",{\"Longtitude\", \"Latitude\"},Combiner.CombineTextByDelimiter(\" \", QuoteStyle.None),\"Polygon\"),",
+        "    #\"Filled Down\" = Table.FillDown(#\"Merged Columns\",{\"No.\"}),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Filled Down\",{\"X\", \"Y\"}),",
+        "    #\"Pivoted Column\" = Table.Pivot(Table.TransformColumnTypes(#\"Removed Columns\", {{\"Point\", type text}}, \"en-US\"), List.Distinct(Table.TransformColumnTypes(#\"Removed Columns\", {{\"Point\", type text}}, \"en-US\")[Point]), \"Point\", \"Polygon\"),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Pivoted Column\", \"Polygon\", each Text.Combine({[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16],[17],[18],[19],[20],[21],[22],[23],[24],[25],[26],[27],[28],[29],[30],[31],[32],[33],[34]}, \", \" ), type text),",
+        "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Added Custom\",{\"No.\", \"Name\", \"Polygon\"}),",
+        "    #\"Added Custom1\" = Table.AddColumn(#\"Removed Other Columns\", \"icon\", each \"MULTIPOLYGON( ( ( \" & [Polygon] & \" ) ) )\", type text),",
+        "    #\"Removed Columns1\" = Table.RemoveColumns(#\"Added Custom1\",{\"No.\",\"Polygon\"}),",
+        "    #\"Added Custom2\" = Table.AddColumn(#\"Removed Columns1\", \"platform_type\", each \"Reserved area\", type text),",
+        "    #\"Renamed Columns\" = Table.RenameColumns(#\"Added Custom2\",{{\"Name\", \"wellsite_name\"}})",
+        "in",
+        "    #\"Renamed Columns\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "S1_Reserved_Area_w_land_type",
+      "lineageTag": "c9b8fec6-8122-4b58-bc18-902ccb17e9eb",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = Table.NestedJoin(S1_Reserved_Area, {\"platform_type\"}, #\"Land Type Temp\", {\"platform_type\"}, \"Land Type\", JoinKind.FullOuter),",
+        "    #\"Expanded Land Type1\" = Table.ExpandTableColumn(Source, \"Land Type\", {\"Land Type\"}, {\"area_1\"}),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Expanded Land Type1\",{{\"wellsite_name\", Order.Ascending}})",
+        "in",
+        "    #\"Sorted Rows\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "wellsite_boundary",
+      "lineageTag": "c837bc55-6bf7-4f04-b1ae-64f1311dd2a2",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"wellsite_site_boundary\",Kind=\"View\"]}[Data],",
+        "    #\"Filtered Rows\" = Table.SelectRows(data, each ([block] = \"S1\")),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Filtered Rows\",{\"x_coordinate\", \"y_coordinate\", \"remark\", \"dp_created_datetime\", \"dp_business_datetime\", \"dl_created_datetime\", \"dl_created_by\"}),",
+        "  #\"Sorted Rows\" = Table.Sort(#\"Removed Columns\",{{\"wellsite_name\", Order.Ascending}, {\"point\", Order.Ascending}}),",
+        "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Sorted Rows\",{{\"longitude\", type text}, {\"latitude\", type text}}),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Changed Type\",\" + Acc Rd\",\"\",Replacer.ReplaceText,{\"wellsite_name\"}),",
+        "    #\"Replaced Value1\" = Table.ReplaceValue(#\"Replaced Value\",\".\",\"\",Replacer.ReplaceText,{\"wellsite_name\"}),",
+        "    #\"Merged Columns\" = Table.CombineColumns(#\"Replaced Value1\",{\"longitude\", \"latitude\"},Combiner.CombineTextByDelimiter(\" \", QuoteStyle.None),\"Polygon\"),",
+        "    #\"Pivoted Column\" = Table.Pivot(Table.TransformColumnTypes(#\"Merged Columns\", {{\"point\", type text}}, \"en-US\"), List.Distinct(Table.TransformColumnTypes(#\"Merged Columns\", {{\"point\", type text}}, \"en-US\")[point]), \"point\", \"Polygon\"),",
+        "    #\"Added Custom2\" = Table.AddColumn(#\"Pivoted Column\", \"Polygon\", each Text.Combine({[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14],[15],[16],[17],[18],[19],[20],[21],[22],[23],[24],[25],[26],[27],[28],[29],[30],[31],[32],[33],[34],[35],[36],[37],[38],[39],[40],[41],[42],[43],[44],[45],[46],[47],[48],[49],[50],[51],[52],[53],[54],[55],[56],[57],[58],[59],[60],[61],[62],[63],[64],[65],[66],[67],[68],[69],[70],[71],[72],[73],[74],[75],[76],[77],[78],[79],[80],[81],[82],[83],[84],[85],[86],[87],[88],[89],[90],[91],[92],[93],[94],[95],[96],[97],[98],[99],[100],[101],[102],[103],[104],[105],[106],[107],[108],[109],[110],[111],[112],[113],[114],[115],[116],[117],[118],[119],[120],[121],[122],[123],[124],[125],[126],[127],[128],[129],[130],[131],[132],[133],[134],[135]}, \", \" ), type text),",
+        "    #\"Removed Columns2\" = Table.RemoveColumns(#\"Added Custom2\",{\"1\", \"2\", \"3\", \"4\", \"5\", \"6\", \"7\", \"8\", \"9\", \"10\", \"11\", \"12\", \"13\", \"14\", \"15\", \"16\", \"17\", \"18\", \"19\", \"20\", \"21\", \"22\", \"23\", \"24\", \"25\", \"26\", \"27\", \"28\", \"29\", \"30\", \"31\", \"32\", \"33\", \"34\", \"35\", \"36\", \"37\", \"38\", \"39\", \"40\", \"41\", \"42\", \"43\", \"44\", \"45\", \"46\", \"47\", \"48\", \"49\", \"50\", \"51\", \"52\", \"53\", \"54\", \"55\", \"56\", \"57\", \"58\", \"59\", \"60\", \"61\", \"62\", \"63\", \"64\", \"65\", \"66\", \"67\", \"68\", \"69\", \"70\", \"71\", \"72\", \"73\", \"74\", \"75\", \"76\", \"77\", \"78\", \"79\", \"80\", \"81\", \"82\", \"83\", \"84\", \"85\", \"86\", \"87\", \"88\", \"89\", \"90\", \"91\", \"92\", \"93\", \"94\", \"95\", \"96\", \"97\", \"98\", \"99\", \"100\", \"101\", \"102\", \"103\", \"104\", \"105\", \"106\", \"107\", \"108\", \"109\", \"110\", \"111\", \"112\", \"113\", \"114\", \"115\", \"116\", \"117\", \"118\", \"119\", \"120\", \"121\", \"122\", \"123\", \"124\", \"125\", \"126\", \"127\", \"128\", \"129\", \"130\", \"131\", \"132\", \"133\", \"134\", \"135\"}),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Removed Columns2\", \"icon\", each \"POLYGON (( \" & [Polygon] & \" ))\", type text),",
+        "    #\"Removed Columns1\" = Table.RemoveColumns(#\"Added Custom\",{\"Polygon\"}),",
+        "    #\"Added Custom1\" = Table.AddColumn(#\"Removed Columns1\", \"platform_type\", each \"area\", type text)",
+        "in",
+        "    #\"Added Custom1\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "wellsite_location",
+      "lineageTag": "3b0a4586-415f-48db-b549-368a5dcf0946",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"wellsite_site_boundary\",Kind=\"View\"]}[Data],",
+        "    #\"Filtered Rows\" = Table.SelectRows(data, each ([block] = \"S1\")),",
+        "  #\"Sorted Rows\" = Table.Sort(#\"Filtered Rows\",{{\"wellsite_name\", Order.Ascending}, {\"point\", Order.Ascending}}),",
+        "    #\"Grouped Rows\" = Table.Group(#\"Sorted Rows\", {\"wellsite_name\", \"block\"}, {{\"latitude\", each List.Average([latitude]), type nullable number}, {\"longitude\", each List.Average([longitude]), type nullable number}}),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Grouped Rows\", \"platform_type\", each \"wellsite\"),",
+        "    #\"Added Custom1\" = Table.AddColumn(#\"Added Custom\", \"icon\", each \"\")",
+        "in",
+        "    #\"Added Custom1\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "Land Type Temp",
+      "lineageTag": "f515800f-fc10-4f8b-8371-b6742a91f796",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"s1_wellsite_data\",Kind=\"View\"]}[Data],",
+        "    #\"Trimmed Text\" = Table.TransformColumns(data,{{\"wellsite_name\", Text.Trim, type text}}),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Trimmed Text\",{{\"wellsite_name\", Order.Ascending}}),",
+        "    #\"Appended Query\" = Table.Combine({#\"Sorted Rows\", S1_area_component}),",
+        "    #\"Removed Columns\" = Table.RemoveColumns(#\"Appended Query\",{\"icon\", \"platform_type\", \"block\"}),",
+        "    #\"Replaced Value\" = Table.ReplaceValue(#\"Removed Columns\",null,\"ไม่มีการระบุข้อมูล\",Replacer.ReplaceValue,{\"land_color_code\", \"area_1\" }),",
+        "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Replaced Value\",{\"area_1\"}),",
+        "    #\"Removed Duplicates\" = Table.Distinct(#\"Removed Other Columns\"),",
+        "    #\"Sorted Rows1\" = Table.Sort(#\"Removed Duplicates\",{{\"area_1\", Order.Ascending}}),",
+        "    #\"Renamed Columns\" = Table.RenameColumns(#\"Sorted Rows1\",{{\"area_1\", \"Land Type\"}}),",
+        "    #\"Added Custom\" = Table.AddColumn(#\"Renamed Columns\", \"platform_type\", each \"Reserved area\", type text)",
+        "in",
+        "    #\"Added Custom\""
+      ],
+      "loadAsTableDisabled": true,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "site_xy_coordinate",
+      "lineageTag": "574cac1e-0f05-4894-b3ea-fd0289287f3a",
+      "queryGroupId": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    data = schema{[Name=\"site_xy_coordinate\",Kind=\"View\"]}[Data],",
+        "    #\"Added Custom\" = Table.AddColumn(data, \"platform_type\", each \"wellsite\", type text),",
+        "    #\"Sorted Rows\" = Table.Sort(#\"Added Custom\",{{\"wellsite_name\", Order.Ascending}}),",
+        "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Sorted Rows\",{\"wellsite_name\", \"x_coordinate\", \"y_coordinate\", \"latitude\", \"longitude\", \"platform_type\"})",
+        "in",
+        "    #\"Removed Other Columns\""
+      ],
+      "isDirectQuery": false,
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "ds_dailyallocation",
+      "lineageTag": "ec0f4e08-4a99-4ef8-81b7-ae4c1cb042a7",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    ds_dailyallocation_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"ds_dailyallocation\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    ds_dailyallocation_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "ds_vw_wellactivitiestlog_oilwater",
+      "lineageTag": "74d1fa93-9142-4f6e-bd13-1b02d62de315",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    ds_vw_wellactivitiestlog_oilwater_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"ds_vw_wellactivitiestlog_oilwater\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    ds_vw_wellactivitiestlog_oilwater_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "eia_information",
+      "lineageTag": "86dde5ad-a1dc-46ab-8672-6a14447269e4",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    eia_information_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"eia_information\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    eia_information_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "info",
+      "lineageTag": "955e2df5-4d26-4854-96c3-0def1bbe9636",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    info_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"info\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    info_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "pdms_data_wellactivitieslogs",
+      "lineageTag": "bd930747-7be4-4cbc-b51c-1a8c322defc5",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset {[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    pdms_data_wellactivitieslogs_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"pdms_data_wellactivitieslogs\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    pdms_data_wellactivitieslogs_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "pedb_data_welldefinition",
+      "lineageTag": "6c4258f6-c725-4864-bdb3-df52bc23fce8",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    pedb_data_welldefinition_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"pedb_data_welldefinition\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    pedb_data_welldefinition_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Exception"
+    },
+    {
+      "name": "s1_flowline_data",
+      "lineageTag": "d61cab35-88df-4f6f-9c40-2b06d390d439",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    s1_flowline_data_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"s1_flowline_data\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    s1_flowline_data_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "site_boundary_coordinate",
+      "lineageTag": "8116dc7d-95f4-438e-9b69-4dc7ff3cd838",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    site_boundary_coordinate_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"site_boundary_coordinate\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    site_boundary_coordinate_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "well_id_master",
+      "lineageTag": "36c55c6d-f2f4-4c69-bb5e-1930071e9fcf",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    well_id_master_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"well_id_master\",Kind=\"Table\"]}[Data]",
+        "in",
+        "    well_id_master_Table"
+      ],
+      "isDirectQuery": false,
+      "resultType": "Table"
+    },
+    {
+      "name": "ds_vw_wellpressure",
+      "lineageTag": "42d846f4-0635-412e-a00b-81ae0c0e120e",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = GoogleBigQuery.Database([BillingProject=gcp_datasource,UseStorageApi=false]),",
+        "    dataset = Source{[Name=gcp_datasource]}[Data],",
+        "    sandbox_s1_integrated_database_platform_Schema = dataset{[Name=\"sandbox_s1_integrated_database_platform\",Kind=\"Schema\"]}[Data],",
+        "    ds_vw_wellpressure_Table = sandbox_s1_integrated_database_platform_Schema{[Name=\"ds_vw_wellpressure\",Kind=\"Table\"]}[Data],",
+        "    #\"Sorted Rows\" = Table.Sort(ds_vw_wellpressure_Table,{{\"prod_date\", Order.Descending}}),",
+        "    #\"Filtered Rows\" = Table.SelectRows(#\"Sorted Rows\", let latest = List.Max(#\"Sorted Rows\"[prod_date]) in each [prod_date] = latest)",
+        "in",
+        "    #\"Filtered Rows\""
+      ],
+      "isDirectQuery": false,
+      "loadAsTableDisabled": true,
+      "resultType": "Table"
+    }
+  ],
+  "queryGroups": [
+    {
+      "name": "Staging",
+      "id": "9e3a236a-848f-4b3f-8c06-111f3e15ad06",
+      "description": ""
+    }
+  ],
+  "culture": "en-US",
+  "firewallEnabled": true
+}

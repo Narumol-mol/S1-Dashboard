@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "datasetReference": {
+    "byPath": {
+      "path": "../S1 Dashboard.Dataset"
+    },
+    "byConnection": null
+  }
+}

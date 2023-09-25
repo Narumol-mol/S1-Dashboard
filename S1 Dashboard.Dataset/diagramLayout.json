@@ -1,0 +1,229 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 3256,
+            "y": 506.625
+          },
+          "nodeIndex": "__metrics",
+          "nodeLineageTag": "fcf2fc00-4d11-4d5d-bfaa-2d5fac857492",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 2830,
+            "y": 26.625
+          },
+          "nodeIndex": "wellsite_site_boundary",
+          "nodeLineageTag": "f637aca0-d897-4003-8acc-dfdef4a2e125",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 3585,
+            "y": 266.125
+          },
+          "nodeIndex": "wellsite_area_boundary",
+          "nodeLineageTag": "65c3078e-16db-487a-b4d7-ac3a316a842f",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 3203,
+            "y": 218.625
+          },
+          "nodeIndex": "s1_wellsite_data",
+          "nodeLineageTag": "7f0dd653-7c57-4bd9-a2b3-a863d752137b",
+          "size": {
+            "height": 174,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 3411,
+            "y": 5.625
+          },
+          "nodeIndex": "Land Type",
+          "nodeLineageTag": "aa9d10a5-fb83-4129-8ae3-d9a62e3855f5",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 568,
+            "y": 206.125
+          },
+          "nodeIndex": "ds_dailyallocation",
+          "nodeLineageTag": "ec0f4e08-4a99-4ef8-81b7-ae4c1cb042a7",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 852,
+            "y": 206.125
+          },
+          "nodeIndex": "ds_vw_wellactivitiestlog_oilwater",
+          "nodeLineageTag": "74d1fa93-9142-4f6e-bd13-1b02d62de315",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1420,
+            "y": 206.125
+          },
+          "nodeIndex": "eia_information",
+          "nodeLineageTag": "86dde5ad-a1dc-46ab-8672-6a14447269e4",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1704,
+            "y": 206.125
+          },
+          "nodeIndex": "info",
+          "nodeLineageTag": "955e2df5-4d26-4854-96c3-0def1bbe9636",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1988,
+            "y": 206.125
+          },
+          "nodeIndex": "pdms_data_wellactivitieslogs",
+          "nodeLineageTag": "bd930747-7be4-4cbc-b51c-1a8c322defc5",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 294,
+            "y": 196.125
+          },
+          "nodeIndex": "pedb_data_welldefinition",
+          "nodeLineageTag": "6c4258f6-c725-4864-bdb3-df52bc23fce8",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2272,
+            "y": 206.125
+          },
+          "nodeIndex": "s1_flowline_data",
+          "nodeLineageTag": "d61cab35-88df-4f6f-9c40-2b06d390d439",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2556,
+            "y": 232.125
+          },
+          "nodeIndex": "site_boundary_coordinate",
+          "nodeLineageTag": "8116dc7d-95f4-438e-9b69-4dc7ff3cd838",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 10,
+            "y": 222.125
+          },
+          "nodeIndex": "well_id_master",
+          "nodeLineageTag": "36c55c6d-f2f4-4c69-bb5e-1930071e9fcf",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3859,
+            "y": 253.625
+          },
+          "nodeIndex": "Measure",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 4133,
+            "y": 240.375
+          },
+          "nodeIndex": "site_xy_coordinate",
+          "nodeLineageTag": "574cac1e-0f05-4894-b3ea-fd0289287f3a",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}
